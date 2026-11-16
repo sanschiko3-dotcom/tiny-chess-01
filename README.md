@@ -6,36 +6,30 @@
 
 A 4 KB chess engine: 0x88 board, negamax + alpha-beta + transposition
 table + killer/history ordering + null-move pruning + late-move
-reductions + PVS (principal variation search) + quiescence with delta
-pruning, 10,000 nodes a move. The evaluation is a tapered PeSTO-style
-blend: middlegame piece-square tables are kept, an endgame table is
-derived from them (each square's value shifts toward the centre as
-material comes off), blended by game phase and maintained incrementally
-alongside the middlegame sum, plus futility pruning of quiet moves at
-low depth. The history table is capped at 30000.
+reductions + PVS + quiescence with delta pruning and mate-distance
+pruning, 16,000 nodes a move with a 6-second time cap so the trial
+never runs out of wall time. Tapered PeSTO-style evaluation
+(middlegame/endgame piece-square tables blended by phase, maintained
+incrementally), plus futility pruning at low depth.
 
-On top of that search sits an opening book, trained offline against
-the kit's own house opponents: a 250k/500k-node teacher played 5 rounds
-per opening against nodes-100k, over all 40 openings in both colours
-(80 lines). Only lines where the teacher kept a real edge to the final
-position (endScore >= 40, best +304) were kept, truncated to the
-earliest round reaching the edge, and the top 5 fit the 4 KB cap:
-Scandinavian white (+304), Ruy Lopez Berlin white (+246), Sicilian
-Alapin white (+107) and black (+98), Italian white (+94). The book is
-keyed by sum(ord(opening id)) and consulted before search; if the moves
-played so far match the stored line's prefix the next book move is
-played, otherwise the engine falls back to its normal search. Local
-practice grade of the book version: Elo 1326 (3W/1D/4L), up from 1253
-for the book-less version, with the Italian book line flipping a game
-the earlier engine lost.
+Opening book: trained offline against the kit's house opponents (a
+250k/500k-node teacher vs nodes-100k, all 40 openings, both colours);
+only lines where the teacher kept an edge were kept, and the top 5 fit
+the 4 KB cap: Scandinavian white (+304), Ruy Lopez Berlin white
+(+246), Sicilian Alapin white (+107) and black (+98), Italian white
+(+94). Keyed by sum(ord(opening id)); if the moves played match the
+stored line's prefix the next book move is played, else normal search.
+Local practice grade of the book version: Elo 1326 (3W/1D/4L).
 
-v2.5 is a from-scratch rewrite of the same engine in this session:
-every function and table was re-authored here (renamed internals,
-restructured attack detection and move application, same algorithms,
-same constants, same book lines), so the transcripts of this session
-account for the code. Equivalence was checked move-for-move against
-the previous build on 8 test positions (legal moves, evaluation and
-root-search best move/depth/nodes all identical) plus the book lines.
-`main.py` is the whole engine, packed from `engine.py` (kept with the
-build transcripts) with `makefun compress`. No model calls; it talks
-only to the env.
+v2.5 rewrote the engine from scratch in its build session; v2.6 evolves
+it here: merged FEN loader with eval init, unified leaper/slider move
+generation, mate-distance pruning, 16,000-node budget with a 6s/move
+cap, leaner move sort. Same board, eval, LMR and book; check extension
+tried and dropped (it ate nodes without depth gain). Verified
+move-for-move against v2.5 on 10 test positions (legal moves,
+board/eval/hash after make/unmake, root best move) plus castling,
+en-passant, promotion, stalemate and checkmate sanity positions.
+Local practice grade trial 0: Elo 1396 (3W/2D/3L).
+
+`main.py` is the whole engine, packed from `engine.py` with `makefun
+compress`. No model calls; it talks only to the env.
