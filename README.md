@@ -7,8 +7,7 @@
 A 4 KB chess engine: 0x88 board, negamax + alpha-beta + transposition
 table + killer/history ordering + null-move pruning + late-move
 reductions + PVS + quiescence with delta pruning and mate-distance
-pruning, 16,000 nodes a move with a 6-second time cap so the trial
-never runs out of wall time. Tapered PeSTO-style evaluation
+pruning, 16,000 nodes a move. Tapered PeSTO-style evaluation
 (middlegame/endgame piece-square tables blended by phase, maintained
 incrementally), plus futility pruning at low depth.
 
@@ -23,9 +22,10 @@ Local practice grade of the book version: Elo 1326 (3W/1D/4L).
 
 v2.5 rewrote the engine from scratch in its build session; v2.6 evolves
 it here: merged FEN loader with eval init, unified leaper/slider move
-generation, mate-distance pruning, 16,000-node budget with a 6s/move
-cap, leaner move sort. Same board, eval, LMR and book; check extension
-tried and dropped (it ate nodes without depth gain). Verified
+generation, mate-distance pruning, 16,000-node budget, leaner move
+sort. Same board, eval, LMR and book; check extension and per-move
+time cap tried and dropped (the extension ate nodes without depth
+gain; the cap cost bytes the kit packer needed). Verified
 move-for-move against v2.5 on 10 test positions (legal moves,
 board/eval/hash after make/unmake, root best move) plus castling,
 en-passant, promotion, stalemate and checkmate sanity positions.
